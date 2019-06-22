@@ -10,12 +10,20 @@
 namespace ray
 {
 
+	enum class eMemoryOrder : uint8_t 
+	{
+		NONE = 0,
+		XXXX = 1,
+		XYZW = 2,
+		Count 
+	};
+
 	template < typename T >
 	struct Vector
 	{
-		T* data;
-		uint32_t length;
-		uint32_t size;
+		T* data = nullptr;
+		uint32_t length = 0;
+		uint32_t size = 0;
 	};
 
 	using Radii4 = __m128;
@@ -23,16 +31,16 @@ namespace ray
 
 	struct Window
 	{
-		uint32_t width = 400;
-		uint32_t height = 400;
-		Color4* data;
-		uint32_t size;
+		uint32_t width = 512;
+		uint32_t height = 512;
+		Color4* data = nullptr;
+		uint32_t size = 0;
 	};
 
 	struct Sampler
 	{
-		uint32_t samples;
-		uint32_t bounces;
+		uint32_t samples = 0;
+		uint32_t bounces = 0;
 	};
 
 	struct Camera
@@ -68,12 +76,27 @@ namespace ray
 			math::Vector4x4f m512;
 			__m128 origin[4];
 			__m128 direction[4];
+
 			struct {
 				__m128 origin0;
 				__m128 direction0;
 				__m128 origin1;
 				__m128 direction1;
 			} pack;
+
+			struct {
+				__m128 xxxx;
+				__m128 yyyy;
+				__m128 zzzz;
+				__m128 wwww;
+			} xxxx;
+
+			struct {
+				__m128 v0;
+				__m128 v1;
+				__m128 v2;
+				__m128 v3;
+			} xyzw;
 		};
 	};
 
@@ -159,11 +182,11 @@ namespace ray
 		camera.viewAt = { 0, 0, 0 };
 		camera.upDir = { 0, 1.f, 0 };
 		camera.eyePos = { 0, -10.f, 0, 0 };
-		camera.eyeDir = math::Normalize(math::Sub(camera.viewAt, camera.eyePos));
+		camera.eyeDir = math::xyzw::Normalize(math::xyzw::Sub(camera.viewAt, camera.eyePos));
 		camera.horizontalViewAngle = math::PI / 4.f;
 		camera.verticalViewAngle = math::PI / 4.f;
-		camera.leftBottom = math::Normalize({ -1, -1, 1 });
-		camera.rightTop = math::Normalize({ 1, 1, 1 });
+		camera.leftBottom = math::xyzw::Normalize({ -1, -1, 1 });
+		camera.rightTop = math::xyzw::Normalize({ 1, 1, 1 });
 	}
 
 	Sampler CreateDefaultSampler()
